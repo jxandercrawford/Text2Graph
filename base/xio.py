@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+File: xio.py
+Author: xc383@drexel.edu
+Date: 2023-10-6
+Purpose: Base classes for building IO processes.
+"""
 
 from abc import abstractclassmethod
 import os

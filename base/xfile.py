@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+File: xfile.py
+Author: xc383@drexel.edu
+Date: 2023-10-6
+Purpose: File implementation of xio.Pull and xio.Push.
+"""
 
 import os
 import sys
@@ -62,5 +68,26 @@ class FilePush(Pull):
     def __validate(self) -> bool:
         return os.path.exists(self.__full_path)
 
-    def push(self):
-        pass
+    def __write_file(self, name:str, content:str, mode="w"):
+        """
+        Writes a file.
+        :param name (str): The file name to write to.
+        :param content (str): The content to write.
+        :param mode (str): The mode to open the file in. Defaults to 'w'.
+        :returns: None.
+        """
+        path = os.path.join(self.__full_path, name)
+        with open(path, mode) as file:
+            file.write(content)
+
+    def push(self, files, mode="w"):
+        """
+        Write multiple files from an interable. 
+        :param files: An interable that contains paired values of (file name, file content).
+        :param mode: The mode to write files in. Defualts to 'w'.
+        :returns: A generator that writes a file and returns its path.
+        """
+        for name, content in files:
+            path = os.path.join(self.__full_path, name)
+            self.__write_file(path, content, mode)
+            yield path
