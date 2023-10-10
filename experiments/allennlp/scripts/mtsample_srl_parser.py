@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-File: mtsample_parser.py
+File: mtsample_srl_parser.py
 Author: xc383@drexel.edu
 Date: 2023-10-1
-Purpose: A script to read a directory full of mtsamples JSONs and write them into verb JSONs using the OpenIE from AllenNLP..
+Purpose: A script to read a directory full of mtsamples JSONs and write them into verb JSONs using the semantic role labeler from AllenNLP.
 """
 
 import os
@@ -15,7 +15,7 @@ from tqdm import tqdm
 import sys
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
-from src.allenNLP.openie import OpenIE
+from src.semanticrolelabel import SemanticRoleLabel
 
 if __name__ == "__main__":
 
@@ -46,20 +46,22 @@ if __name__ == "__main__":
     if not os.path.exists(outpath):
         raise FileNotFoundError("The outpath of '%s' could not be found." % outpath)
 
-    extractor = OpenIE()
+    extractor = SemanticRoleLabel()
 
     for file_name in tqdm(os.listdir(inpath), desc="Extracting verbs", unit=" doc"):
         in_file = os.path.join(inpath, file_name)
         out_file = os.path.join(outpath, file_name)
         with open(in_file, "r") as infp, open(out_file, "w") as outfp:
             doc = json.loads(infp.read())
-            outfp.write(json.dumps(
-                {
-                    "type_id": doc["type_id"],
-                    "sample_id": doc["sample_id"],
-                    "verbs": extractor.parse(
-                        doc["text"]
-                    )
-                }
-            ))
-
+            try:
+                outfp.write(json.dumps(
+                    {
+                        "type_id": doc["type_id"],
+                        "sample_id": doc["sample_id"],
+                        "verbs": extractor.parse(
+                            doc["text"]
+                        )
+                    }
+                ))
+            except Exception as e:
+                print("ERROR: Document '%s' failed with error returned: %s" % (file_name, e));

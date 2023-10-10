@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 """
-File: mtsample_srl_parser.py
+File: mtsample_parser.py
 Author: xc383@drexel.edu
 Date: 2023-10-1
-Purpose: A script to read a directory full of mtsamples JSONs and write them into verb JSONs using the semantic role labeler from AllenNLP.
+Purpose: A script to read a directory full of mtsamples JSONs and write them into verb JSONs using the OpenIE from AllenNLP..
 """
 
 import os
@@ -15,7 +15,7 @@ from tqdm import tqdm
 import sys
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
-from src.allenNLP.semanticrolelabel import SemanticRoleLabel
+from src.openie import OpenIE
 
 if __name__ == "__main__":
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     if not os.path.exists(outpath):
         raise FileNotFoundError("The outpath of '%s' could not be found." % outpath)
 
-    extractor = SemanticRoleLabel()
+    extractor = OpenIE()
 
     for file_name in tqdm(os.listdir(inpath), desc="Extracting verbs", unit=" doc"):
         in_file = os.path.join(inpath, file_name)
@@ -62,3 +62,4 @@ if __name__ == "__main__":
                     )
                 }
             ))
+
