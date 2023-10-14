@@ -1,1 +1,4 @@
 data/
+.secrets
+frameworks/apache-ctakes-4.0.0.1/
+__pycache__/

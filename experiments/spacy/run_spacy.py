@@ -10,9 +10,13 @@ import argparse
 import json
 from tqdm import tqdm
 
-from processor import Document
 from text2graph.base.procpipe import ProcPipe
 from text2graph.base.xfile import FilePull, FilePush
+
+import spacy
+nlp = spacy.load("en_core_web_sm")
+
+PIPELINE_ACTIONS = ["tok2vec", "tagger", "parser", "ner", "lemmatizer"]
 
 def read_parsed_mtsample(path: str) -> str:
     """
@@ -25,21 +29,33 @@ def read_parsed_mtsample(path: str) -> str:
 
 def run_nlp_pipeline(document: dict):
     """
-    Run the NLTK pipeline on an mtsample parsing.
+    Run the SpaCy pipeline on an mtsample parsing.
     :param document (dict): The mtsample parsing.
     :returns: Parsed document as a dict.
     """
-    nlp = Document(document["text"])
-    return {
+    values = {
         "type_id": document["type_id"],
-        "sample_id": document["sample_id"],
-        "sentences": nlp.tokens,
-        "pos": nlp.pos
+        "sample_id": document["sample_id"]
     }
+
+    processing_steps = {
+        "tok2vec": (lambda doc: [token.vector.tolist() for token in doc]),
+        "tagger": (lambda doc: [(token.text, token.tag_) for token in doc]),
+        "parser": (lambda doc: [(token.text, token.dep_) for token in doc]),
+        "ner": (lambda doc: [(ent.text, ent.label_) for ent in doc.ents]),
+        "lemmatizer": (lambda doc: [(token.text, token.lemma_) for token in doc])
+    }
+
+    doc = nlp(document["text"])
+    for action in PIPELINE_ACTIONS:
+        if action in processing_steps:
+            values[action] = processing_steps[action](doc)
+
+    return values
 
 def nlp_processor(path: str) -> str:
     """
-    Given a path to a mtsample parsing process it with the NLTK pipeline.
+    Given a path to a mtsample parsing process it with the SpaCy pipeline.
     :param path (str): Path to file to read.
     :returns: The file name and parsed document as a JSON string as a tuple. (name, content)
     """
@@ -56,8 +72,9 @@ def nlp_processor(path: str) -> str:
     )
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser(
-        description="Parses mtsamples JSON files with NLTK for tokenization and part-of-speach."
+        description="Parses mtsamples JSON files with SpaCy for %s." % ", ".join(PIPELINE_ACTIONS)
     )
 
     parser.add_argument(
@@ -76,6 +93,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     pull = FilePull(args.inpath)
     push = FilePush(args.outpath)
+
     pipe = ProcPipe(pull, push, nlp_processor)
 
     process = pipe.run()
