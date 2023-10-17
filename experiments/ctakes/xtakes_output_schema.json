@@ -1,0 +1,116 @@
+{
+    "text": {
+        "description": "The text in which all artifacts are extracted from. Text is stored under the value of 'sofaString'.",
+        "xpath": "/xmi:XMI/cas:Sofa"
+    },
+    "metadata": {
+        "document_id": {
+            "description": "The name of document.",
+            "xpath": "/xmi:XMI/structured:DocumentID/@documentID"
+        },
+        "document_path": {
+            "description": "The origin of document.",
+            "xpath": "/xmi:XMI/structured:DocumentPath/@documentPath"
+        }
+    },
+    "index": {
+        "syntax": {
+            "sentence": {
+                "description": "The start and stop index of a sentence in the document.",
+                "xpath": "/xmi:XMI/textspan:Sentence"
+            },
+            "newline": {
+                "description": "The index of a newlines in the document.",
+                "xpath": "/xmi:XMI/syntax:NewlineToken"
+            },
+            "word": {
+                "description": "The index of a word in the document.",
+                "xpath": "/xmi:XMI/syntax:WordToken"
+            },
+            "punctuation": {
+                "description": "The index of punctuation in the document.",
+                "xpath": "/xmi:XMI/syntax:PunctuationToken"
+            },
+            "number": {
+                "description": "The index of punctuation in the document.",
+                "xpath": "/xmi:XMI/syntax:NumToken"
+            },
+            "symbol": {
+                "description": "The index of a symbol in the document.",
+                "xpath": "/xmi:XMI/syntax:SymbolToken"
+            },
+            "chunk": {
+                "description": "The index of a chunk in the document.",
+                "xpath": "/xmi:XMI/syntax:Chunk"
+            },
+            "dependant": {
+                "description": "The index of a dependancy node in the document.",
+                "xpath": "/xmi:XMI/syntax:ConllDependencyNode"
+            },
+            "predicate": {
+                "description": "The index of a predicate in the document.",
+                "xpath": "/xmi:XMI/textsem:Predicate"
+            }
+        },
+        "mention": {
+            "numeral": {
+                "description": "The index of a mentioned Roman numeral in the document.",
+                "xpath": "/xmi:XMI/textsem:RomanNumeralAnnotation"
+            },
+            "measurement": {
+                "description": "The index of a mentioned measurement in the document.",
+                "xpath": "/xmi:XMI/textsem:MeasurementAnnotation"
+            },
+            "fraction": {
+                "description": "The index of a mentioned fraction in the document.",
+                "xpath": "/xmi:XMI/textsem:FractionAnnotation"
+            },
+            "medication": {
+                "description": "The index of a mentioned medication in the document.",
+                "xpath": "/xmi:XMI/textsem:MedicationMention"
+            },
+            "disease": {
+                "description": "The index of a mentioned disease or disorder in the document.",
+                "xpath": "/xmi:XMI/textsem:DiseaseDisorderMention"
+            },
+            "symptom": {
+                "description": "The index of a mentioned symptom or sign in the document.",
+                "xpath": "/xmi:XMI/textsem:SignSymptomMention"
+            },
+            "procedure": {
+                "description": "The index of a mentioned procedure in the document.",
+                "xpath": "/xmi:XMI/textsem:ProcedureMention"
+            },
+            "anatomy": {
+                "description": "The index of a mentioned anatomical site in the document.",
+                "xpath": "/xmi:XMI/textsem:AnatomicalSiteMention"
+            }
+        },
+        "cas": {
+            "fs_list": {
+                "description": "A non-empty fs list.",
+                "xpath": "/xmi:XMI/cas:NonEmptyFSList"
+            },
+            "empty_fs_list": {
+                "description": "A empty fs list.",
+                "xpath": "/xmi:XMI/cas:EmptyFSList"
+            }
+        }
+    },
+    "semantic_role": {
+        "argument": {
+            "description": "The index of a semantic argument in the document.",
+            "xpath": "/xmi:XMI/textsem:SemanticArgument"
+        },
+        "relation": {
+            "description": "The index of a semantic role in the document.",
+            "xpath": "/xmi:XMI/textsem:SemanticRoleRelation"
+        }
+    },
+    "concept": {
+        "umls": {
+            "description": "A reference to an UMLS concept.",
+            "xpath": "/xmi:XMI/refsem:UmlsConcept"
+        }
+    }
+}
