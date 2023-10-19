@@ -22,7 +22,7 @@ class Document:
         self.__validate_path()
 
         # Create xml parser
-        self.__tree = etree.parse(SAMPLE_XMI)
+        self.__tree = etree.parse(path)
         self.__namespaces = self.__tree.getroot().nsmap.copy()
         self.__root = root = self.__tree.getroot()
 
