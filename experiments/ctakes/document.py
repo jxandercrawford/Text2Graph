@@ -33,6 +33,10 @@ class Document:
         return os.path.isfile(self.__path)
 
     @property
+    def path(self):
+        return self.__path
+
+    @property
     def root(self):
         return self.__root
 

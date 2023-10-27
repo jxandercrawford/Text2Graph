@@ -2,7 +2,7 @@
 """
 File: metamap_parser.py
 Author: xc383@drexel.edu
-Date: 2023-10-27
+Date: 2023-10-18
 Purpose: A parser for metamap JSONs.
 """
 
@@ -20,10 +20,11 @@ sys.path.append(BASE_DIR)
 sys.path.append(ROOT_DIR)
 
 from base.xfile import FilePull
-from metaparse import process_metamap_json
-from concept import dict_to_concept, Concept
+from base.procpipe import ProcPipe
+from mapping import Mapping, map_to_uterance
 
-OUTFILE_NAME = "metamap_concepts.csv"
+JSON_PATH_TO_DATA = ["AllDocuments", "Document", "Utterances", "Phrases", "Mappings", "MappingCandidates"]
+OUTFILE_NAME = "metamap_mappings.csv"
 
 def failproof(func, default=None, verbose:bool=False):
     def wrap(*args, **kwargs):
@@ -48,6 +49,25 @@ def flatten(lists: list[list[Any]]) -> list[Any]:
         flat += xs
     return flat
 
+def crawl(mapping, keyset, func=lambda x: x):
+
+    content = []
+    key = keyset[0]
+    value = mapping.get(key)
+
+    if not keyset[1:] and isinstance(value, list):
+        for item in value:
+            content.append(func(item))
+    elif not keyset[1:] and value:
+        content.append(func(value))
+    elif keyset[1:] and isinstance(value, list):
+        for item in value:
+            content += crawl(item, keyset[1:], func)
+    elif keyset[1:] and isinstance(value, dict):
+        content += crawl(value, keyset[1:], func)
+
+    return content
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Parses Metamap output JSON files into a CSV of mappings."
@@ -65,12 +85,6 @@ if __name__ == "__main__":
         type=str
     )
 
-    parser.add_argument(
-        "-i", "--ignore",
-        help="Flag to ignore errors while parsing. Will print errors to stdout.",
-        action="store_true"
-    )
-
     args = parser.parse_args()
 
     # Read directory for all json files
@@ -79,30 +93,27 @@ if __name__ == "__main__":
 
     # Prepare outfile
     outfile = open(os.path.join(args.outpath, OUTFILE_NAME), "w")
-    csv_fields = ["file", *map(lambda x: x.name, fields(Concept))]
+    csv_fields = ["file", *map(lambda x: x.name, fields(Mapping))]
     csvfile = csv.writer(outfile, quoting=csv.QUOTE_NONNUMERIC)
     csvfile.writerow(csv_fields)
 
-    # Loop over directory
-    for path in files:
+    # Failproof the parsing function
+    func = failproof(map_to_uterance, [], True)
 
-        try:
-            # Open file and find start of json
-            with open(path, "r") as file:
-                lines = file.readlines()
-                if lines[0][0] == "{":
-                    data = json.loads(lines[0])
-                else:
-                    data = json.loads(lines[1])
-        except Exception as e:
-            if args.ignore:
-                print("\nError while parsing '%s': %s" % (path, e), file=sys.stderr)
+    # Loop over directory
+    for path in tqdm(files, desc="Parsing docs", unit=" doc"):
+
+        # Open file and find start of json
+        with open(path, "r") as file:
+            lines = file.readlines()
+            if lines[0][0] == "{":
+                data = json.loads(lines[0])
             else:
-                raise Exception("Error while parsing '%s': %s" % (path, e))
+                data = json.loads(lines[1])
 
         # Pull all mappings and write them
-        concepts = map(dict_to_concept, process_metamap_json(data))
-        for item in concepts:
+        mappings = flatten(crawl(data, JSON_PATH_TO_DATA, func))
+        for item in mappings:
             csvfile.writerow([os.path.basename(path), *item.astuple()])
 
     outfile.close()

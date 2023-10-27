@@ -82,7 +82,7 @@ class FilePush(Pull):
 
     def push(self, files, mode="w"):
         """
-        Write multiple files from an interable. 
+        Write multiple files from an interable.
         :param files: An interable that contains paired values of (file name, file content).
         :param mode: The mode to write files in. Defualts to 'w'.
         :returns: A generator that writes a file and returns its path.
