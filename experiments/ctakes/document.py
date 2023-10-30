@@ -44,7 +44,7 @@ class Document:
         return self.__root.xpath(xpath, namespaces=self.__namespaces)
 
     def get_id(self, id: int):
-        elems = root.xpath(".//*[@xmi:id='%d']" % x, namespaces=namespaces)
+        elems = self.__root.xpath(".//*[@xmi:id='%d']" % id, namespaces=self.__namespaces)
         if elems:
             return elems[0]
         return None
