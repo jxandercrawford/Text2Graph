@@ -75,8 +75,8 @@ def get_mentions(doc: Document):
             for concept in map(int, re.split(r"\s+", mention.pop("ontologyConceptArr"))):
                 new_mention = mention
                 new_mention["ontologyConceptID"] = concept
+                new_mention["type"] = name
                 new_items.append(new_mention)
-            new_mention["type"] = name
         return new_items
 
     records = []
@@ -98,4 +98,4 @@ def get_mentions(doc: Document):
         concepts,
         left_on="ontologyConceptID",
         right_on="{http://www.omg.org/XMI}id"
-    ).to_dict(orient="records")
+    ).drop_duplicates().to_dict(orient="records")
