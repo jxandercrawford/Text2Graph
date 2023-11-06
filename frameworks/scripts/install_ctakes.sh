@@ -42,4 +42,3 @@ rm -r $TMP_DIR
 echo "Documentation: https://cwiki.apache.org/confluence/collector/pages.action?key=CTAKES"
 echo "Run Clinical Pipeline:"
 echo "Usage: ./apache-ctakes-$VERSION_NUMBER/bin/runClinicalPipeline.sh -i \$IN_DIRECTORY --xmiOut \$OUT_DIRECTORY --key $UMLS_KEY --user \$UMLS_USER --pass \$UMLS_PASS"
-
