@@ -10,32 +10,20 @@ import re
 
 def breakdown_criteria_text(text: str) -> dict[str, str]:
     """
-    Breakdown a criteria specification text into sections. Will parse into list of inclusion sections and exclusion sections.
+    Breakdown a criteria specification text into sections. Will parse into list of criteria sections.
     :param text (str): A text to parse.
-    :returns: A dict of inclusion sections list and exclusion sections list.
+    :returns: A dict of sections.
     """
-    criteria_split_pattern = r"(\w+)\s+[Cc]riteria\W?"
-    split_pattern = re.compile(criteria_split_pattern)
+    criteria = re.findall(r"\n?(.*clusion)\s+[Cc]riteria\S?\n", text)
+    if not criteria:
+        return {}
+    blocks = re.split("(?:" + "|".join(criteria) + ")\\s+[Cc]riteria\\S?", text)
+    sections = {str(k).lower().replace(" ", "_"): v for k, v in zip(criteria, list(filter(lambda x: x != "", blocks)))}
 
-    doc = {
-        "inclusion": [],
-        "exclusion": []
-    }
+    for k, v in sections.items():
+        sections[k] = tolines(v)
 
-    criteria_parts = re.split(split_pattern, text)
-    i = 0
-
-    while i < len(criteria_parts):
-        lower_case_part = criteria_parts[i].lower()
-        if lower_case_part == "inclusion":
-            i += 1
-            doc[lower_case_part].append(criteria_parts[i])
-        elif lower_case_part == "exclusion":
-            i += 1
-            doc[lower_case_part].append(criteria_parts[i])
-        i += 1
-
-    return doc
+    return sections
 
 def tolines(text: str) -> list[str]:
     """
@@ -43,6 +31,8 @@ def tolines(text: str) -> list[str]:
     :param text (str): A text to split.
     :returns: A list of strings.
     """
+    if text is None:
+        return None
     newlines_break = re.compile(r"\n+")
     return re.split(newlines_break, text)
 
@@ -54,6 +44,9 @@ def check_valid(text: str) -> bool:
     """
     return True
 
+def filter_criteria(text: str) -> bool:
+    return text != ""
+
 def process_criteria(text: str, min_length: int=10) ->list[tuple]:
     """
     Process a critera into tuples. Each resulting tuple contains the (criteria type, section index, criteria text).
@@ -64,19 +57,14 @@ def process_criteria(text: str, min_length: int=10) ->list[tuple]:
     criteria = []
     sections = breakdown_criteria_text(text)
 
-    inclusion = "\n".join(sections["inclusion"])
-    exclusion = "\n".join(sections["exclusion"])
-
-    if check_valid(inclusion):
+    for key in sections.keys():
         cnt = 0
-        for item in filter(lambda x: len(x) > 9, tolines(inclusion)):
-            criteria.append(("inclusion", cnt, item))
-            cnt += 1
-
-    if check_valid(exclusion):
-        cnt = 0
-        for item in filter(lambda x: len(x) > 9, tolines(exclusion)):
-            criteria.append(("exclusion", cnt, item))
-            cnt += 1
+        values = sections.get(key)
+        if values is None:
+            continue
+        for val in values:
+            if filter_criteria(val):
+                criteria.append([key, cnt, val])
+                cnt += 1
 
     return criteria

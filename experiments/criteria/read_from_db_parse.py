@@ -12,7 +12,21 @@ from criteria import process_criteria
 from database import Database
 
 MIN_CRITERIA_LENGTH = 10
-SELECT_STATEMENT = "SELECT nct_id, criteria FROM eligibilities;"
+SELECT_STATEMENT = "SELECT setseed(.5); SELECT e.nct_id, EXTRACT( YEAR FROM s.start_date ) AS start_year, e.criteria FROM eligibilities e JOIN studies s ON e.nct_id = s.nct_id WHERE EXTRACT( YEAR FROM s.start_date ) > 2020 ORDER BY RANDOM() LIMIT 385;"
+# SELECT_STATEMENT = """
+# SELECT setseed(.5);
+# WITH crits AS (
+# 	SELECT
+# 		e.nct_id,
+# 		e.criteria,
+# 		EXTRACT(year FROM start_date) AS start_year,
+# 		row_number() OVER (PARTITION BY EXTRACT(year FROM start_date) ORDER BY random()) AS rid
+# 	FROM eligibilities e
+# 	JOIN studies s
+# 	ON e.nct_id = s.nct_id
+# ) SELECT nct_id, criteria, start_year FROM crits WHERE rid <= 10;
+# """
+
 BASE_CREDENTIALS = {
     "host": "",
     "database": "aact",
@@ -40,11 +54,15 @@ if __name__ == "__main__":
     texts = db.execute_yield(SELECT_STATEMENT)
 
     for item in texts:
-        nct_id, text = item.values()
+        nct_id, year, text = item.values()
+
+        if text is None:
+            continue
 
         try:
-            criteria = process_criteria("".join(text), MIN_CRITERIA_LENGTH)
-            fd.writerows(map(lambda x: [nct_id, *x], criteria))
-            print(out.getvalue(), file=sys.stdout)
+            criteria = process_criteria(text, MIN_CRITERIA_LENGTH)
+            fd.writerows(map(lambda x: [nct_id, year, *x], criteria))
+            print(out.getvalue()[:-1], file=sys.stdout)
+            out.flush()
         except Exception as e:
             print("ERROR: Issue parsing '%s' resulting in: %s" % (nct_id, e), file=sys.stderr)
